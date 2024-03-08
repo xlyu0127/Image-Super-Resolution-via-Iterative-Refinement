@@ -1,13 +1,16 @@
+# %%
 from io import BytesIO
 import lmdb
 from PIL import Image
 from torch.utils.data import Dataset
 import random
+import sys
+sys.path.append('/home/yuxinlin/Image-Super-Resolution-via-Iterative-Refinement/')
 import data.util as Util
 
 
 class LRHRDataset(Dataset):
-    def __init__(self, dataroot, datatype, l_resolution=16, r_resolution=128, split='train', data_len=-1, need_LR=False):
+    def __init__(self, dataroot, datatype, l_resolution=64, r_resolution=512, split='val', data_len=-1, need_LR=True):
         self.datatype = datatype
         self.l_res = l_resolution
         self.r_res = r_resolution
@@ -91,9 +94,19 @@ class LRHRDataset(Dataset):
                 img_LR = Image.open(self.lr_path[index]).convert("RGB")
         if self.need_LR:
             [img_LR, img_SR, img_HR] = Util.transform_augment(
-                [img_LR, img_SR, img_HR], split=self.split, min_max=(-1, 1))
+                 [img_LR, img_SR, img_HR], split=self.split, min_max=(-1, 1))
             return {'LR': img_LR, 'HR': img_HR, 'SR': img_SR, 'Index': index}
         else:
             [img_SR, img_HR] = Util.transform_augment(
-                [img_SR, img_HR], split=self.split, min_max=(-1, 1))
+                 [img_SR, img_HR], split=self.split, min_max=(-1, 1))
             return {'HR': img_HR, 'SR': img_SR, 'Index': index}
+        
+
+# %%
+dataset = LRHRDataset('/home/yuxinlin/Image-Super-Resolution-via-Iterative-Refinement/dataset/ffhq_64_512','img')
+# %%
+
+print(dataset.__getitem__(0)['LR'].shape)
+print(dataset.__getitem__(0)['SR'].shape)
+print(dataset.__getitem__(0)['HR'].shape)
+# %%
